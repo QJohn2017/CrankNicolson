@@ -1,0 +1,112 @@
+#pragma once
+
+#include <complex>
+#include <functional>
+#include "hamiltonian.h"
+#include "SimulationParameter.h"
+
+/**
+ * @brief LinearHamiltonianSolver Basic nonlinear Schrödinger equation solver
+ *                                which solves the Crank Nicolson algorithm for soliton.
+ * The HamiltonSolver solves the Schrödinger equation with the form
+ * \f[
+ *      (\frac{P^2}{2m} + V(r) + k\cdot|x(r,t)|^2)\ket{x(r, t)} = i\hbar \frac{\delta}{\delta t}\ket{x(r,t)}
+ * \f]
+ * with \f$V(r)\f$ potential at the position \f$r\f$.
+ * The default solver used a left and a right matrix to solve the equation with
+ * \f[
+ *      (1 + \frac{it}{2} H)\ket{x(r,t)}^{n+1} = (1 - \frac{it}{2} H)\ket{x(r,t)}^{n}
+ * \f]
+ * with
+ * \f[
+ *      Left := 1 + \frac{i\Delta t}{2} H
+ * \f]
+ * and
+ * \f[
+ *      Right := 1 - \frac{i\Delta t}{2} H
+ * \f]
+ */
+template <typename T>
+class NonLinearHamiltonianSolver : public HamiltonianSolver<T>
+{
+public:
+    /**
+     * @brief NonLinearHamiltonianSolver construct the Hamiltonian matrix from the SimulationParamter and a potentialFunction
+     * @param Parameter The Parameter with time step and resolution
+     * @param PotentialFunction The potential function which must be a function of the form
+     *                          \f$ f:[0,1]\rightarrow\mathbb{R} \f$
+     * @param factor a factor for the influence of the \f$ |x(r,t)|^2 \f$ term
+     */
+    NonLinearHamiltonianSolver(SimulationParameter Parameter,
+                         std::function<double (double)> PotentialFunction,
+                         const double Factor)
+        : parameter(Parameter), potentialFunction(PotentialFunction), factor(Factor) {
+        hamiltonian = TridiagonalMatrix<T>(parameter.atomCount);
+        for (unsigned int i = 0; i < parameter.atomCount; ++i) {
+            hamiltonian(TridiagonalMatrix<T>::Lower, i) = std::complex<double>(-1.0, 0);
+            hamiltonian(TridiagonalMatrix<T>::Diagonal, i) = std::complex<double>( 2.0 + 2 * potentialFunction(static_cast<double>(i) / parameter.atomCount) + factor, 0);
+            hamiltonian(TridiagonalMatrix<T>::Upper, i) = std::complex<double>(-1.0, 0);
+        }
+
+        left = TridiagonalMatrix<T>::identity(parameter.atomCount, std::complex<double>(1.0, 0)) +
+                hamiltonian * std::complex<double>(0, parameter.lambda);
+        right = TridiagonalMatrix<T>::identity(parameter.atomCount, std::complex<double>(1.0, 0)) -
+                hamiltonian * std::complex<double>(0, parameter.lambda);
+    }
+
+    /**
+     * @brief solve Solve the Equation for the wave function for the computed Hamiltonian
+     * @param current The current Wave vector of the simulation
+     * @return The new Wave in the next timestep of the Simulation
+     */
+    virtual Vector<T> solve(const Vector<T>& current) override {
+        double absV = 0;
+        for (unsigned int i = 0; i < parameter.atomCount; ++i) {
+            absV += std::abs(current(i));
+        }
+
+        for (unsigned int i = 0; i < parameter.atomCount; ++i) {
+            hamiltonian(TridiagonalMatrix<T>::Lower, i) = std::complex<double>(-1.0, 0);
+            hamiltonian(TridiagonalMatrix<T>::Diagonal, i) = std::complex<double>( 2.0 + 2 * potentialFunction(static_cast<double>(i) / parameter.atomCount) + factor * absV, 0);
+            hamiltonian(TridiagonalMatrix<T>::Upper, i) = std::complex<double>(-1.0, 0);
+        }
+
+        left = TridiagonalMatrix<T>::identity(parameter.atomCount, std::complex<double>(1.0, 0)) +
+                hamiltonian * std::complex<double>(0, parameter.lambda);
+        right = TridiagonalMatrix<T>::identity(parameter.atomCount, std::complex<double>(1.0, 0)) -
+                hamiltonian * std::complex<double>(0, parameter.lambda);
+        return getLeftMatrix().solve(getRightMatrix() * current);
+    }
+
+    /**
+     * @brief getHamiltonianMatrix Return the used Hamilton Matrix
+     * @return The Hamilton Matrix
+     */
+    virtual TridiagonalMatrix<T> getHamiltonianMatrix() override {
+        return hamiltonian;
+    }
+
+    /**
+     * @brief getLeftMatrix The left assigned Matrix which may be used in the simulation
+     * @return The left assigned Matrix
+     */
+    virtual TridiagonalMatrix<T> getLeftMatrix() override {
+        return left;
+    }
+
+    /**
+     * @brief getRightMatrix The right assigned Matrix which may be used in the simulation
+     * @return The right assigned Matrix
+     */
+    virtual TridiagonalMatrix<T> getRightMatrix() override {
+        return right;
+    }
+
+private:
+    TridiagonalMatrix<T> hamiltonian;
+    TridiagonalMatrix<T> left;
+    TridiagonalMatrix<T> right;
+    SimulationParameter parameter;
+    std::function<double (double)> potentialFunction;
+    double factor;
+};
