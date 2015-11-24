@@ -16,9 +16,9 @@
  *      \begin{pmatrix}
  *          a_1    & b_1    & 0      &   0     & \dots     & 0          \\
  *          c_2    & a_2    & b_2    &   0     & \dots     & 0          \\
- *          0      & c_3    & a_3    & b_3     & \dots     & 0          \\
- *          \vdots & \ddots & \ddots & \ddots  & \ddots    & \dots  & 0 \\
- *          0      & \dots  & 0      & c_{n-1} & a_{n - 1} & b_{n-1}    \\
+ *          0      & c_3    & a_3    & b_3     & \ddots    & 0          \\
+ *          \vdots & \ddots & \ddots  & \ddots & \ddots    & 0          \\
+ *          0      & \ddots & 0      & c_{n-1} & a_{n - 1} & b_{n-1}    \\
  *          0      & \dots  & 0      & 0       & c_n       & a_n        \\
  *      \end{pmatrix}
  * \f]

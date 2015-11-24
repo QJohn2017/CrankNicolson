@@ -7,11 +7,11 @@
  *                          If you want to implement a custom solver inherit from this class
  * The HamiltonSolver solves the Schrödinger equation with the form
  * \f[
- *      H\ket{x(r, t)} = i\hbar \frac{\delta}{\delta t}\ket{x(r,t)}
+ *      H|x(r, t)\rangle = i\hbar \frac{\delta}{\delta t}|x(r,t)\rangle
  * \f]
  * The default solver used a left and a right matrix to solve the equation with
  * \f[
- *      (1 + \frac{it}{2} H)\ket{x(r,t)}^{n+1} = (1 - \frac{it}{2} H)\ket{x(r,t)}^{n}
+ *      (1 + \frac{it}{2} H)|x(r,t)\rangle^{n+1} = (1 - \frac{it}{2} H)|x(r,t)\rangle^{n}
  * \f]
  * with
  * \f[
