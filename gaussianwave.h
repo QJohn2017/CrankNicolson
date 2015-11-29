@@ -21,7 +21,7 @@ public:
     }
 
     virtual T getDisplacement(unsigned int index) const {
-        const double ampl = std::pow(1.0 / (2 * PI * width * width), 4.0);
+        const double ampl = std::pow(1.0 / (2 * PI * width * width), 1.0 / 4.0);
         const double x = static_cast<double>(index);
         const std::complex<double> e1(-(x - pos) * (x - pos) / (width * width));
         const std::complex<double> e2(0, -k * x);

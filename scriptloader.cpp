@@ -326,11 +326,22 @@ BOOST_PYTHON_MODULE(CrankNicolson) {
             .value("Iteration", Observable::Iteration)
             .value("Cooldown", Observable::Cooldown)
     ;
+
+    class_<SimulationParameter>("SimulationParameter", no_init)
+            .def_readonly("dx", &SimulationParameter::dx)
+            .def_readonly("dt", &SimulationParameter::dt)
+            .def_readonly("lambda", &SimulationParameter::lambda)
+            .def_readonly("iterations", &SimulationParameter::iterations)
+            .def_readonly("atomCount", &SimulationParameter::atomCount)
+    ;
+
     class_<PythonSimulation, boost::noncopyable, boost::shared_ptr<PythonSimulation>>("Simulation", no_init)
             .def("setSolver", &PythonSimulation::setSolver)
             .def("addWave", &PythonSimulation::addWave)
             .def("addFilter", &PythonSimulation::addFilter)
             .def("run", &PythonSimulation::run)
+            .def("getParameter", &PythonSimulation::getParameter)
+            .def("getAtoms", &PythonSimulation::getAtoms)
     ;
     class_<Wave<std::complex<double>>, boost::noncopyable, boost::shared_ptr<WaveCallback>>("Wave")
             .def("getDisplacement", &Wave<std::complex<double>>::getDisplacement)
@@ -357,24 +368,27 @@ BOOST_PYTHON_MODULE(CrankNicolson) {
     class_<PythonNonLinearHamiltonianSolver<std::complex<double>>, bases<HamiltonianSolver<std::complex<double>>>>("NonLinearHamiltonianSolver", init<PythonSimulation*, boost::python::object, double>());
 }
 
-ScriptLoader::ScriptLoader(Simulation &simulation,
-                           const std::string& scriptDir) {
+ScriptExecutor::ScriptExecutor(Simulation &simulation,
+                           const std::string& scriptFile) {
     namespace python = boost::python;
-    Py_Initialize();
-    python::object main = import("__main__");
-    python::object mainNamespace = main.attr("__dict__");
 
-    std::vector<boost::filesystem::path> files = getScriptFiles(scriptDir);
+    Py_Initialize();
+
+    // Set working dir in python
+    boost::filesystem::path workingDir = boost::filesystem::absolute(boost::filesystem::path(scriptFile).parent_path()).normalize();
+    PyObject* sysPath = PySys_GetObject("path");
+    PyList_Insert(sysPath, 0, PyString_FromString(workingDir.string().c_str()));
+
     try {
+        python::object main = import("__main__");
+        python::object mainNamespace = main.attr("__dict__");
+
         PythonSimulation sim(&simulation);
         initCrankNicolson();
 
         python::scope scope(main);
         scope.attr("simulation") = object(ptr(&sim));
-
-        for (boost::filesystem::path path : files) {
-            exec_file(path.c_str(), mainNamespace, mainNamespace);
-        }
+        exec_file(scriptFile.c_str(), mainNamespace, mainNamespace);
 
         sim.run();
     } catch(...) {
@@ -382,8 +396,11 @@ ScriptLoader::ScriptLoader(Simulation &simulation,
     }
 }
 
+ScriptExecutor::~ScriptExecutor() {
+    Py_Finalize();
+}
 
-std::vector<boost::filesystem::path> ScriptLoader::getScriptFiles(const std::string& dir) {
+std::vector<boost::filesystem::path> ScriptExecutor::getScriptFiles(const std::string& dir) {
     std::vector<boost::filesystem::path> paths;
     fs::path someDir(dir);
     fs::directory_iterator end_iter;

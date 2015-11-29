@@ -7,10 +7,6 @@ Simulation::Simulation(SimulationParameter params, std::shared_ptr<ComplexHamilt
 }
 
 Simulation::~Simulation() {
-    for (auto& it : filter) {
-        if (it->check(Observable::Cooldown))
-            it->filter(*this);
-    }
 }
 
 void Simulation::run() {

@@ -15,6 +15,8 @@
 
 #include "scriptloader.h"
 
+#include "simulationexecutor.h"
+
 using namespace std;
 
 double V(double x) {
@@ -36,16 +38,18 @@ double V(double x) {
 }
 
 int main() {
-    const unsigned int iterations = 1000;
+    /*const unsigned int iterations = 1000;
     const unsigned int count = 1000;
     const double dx = 0.0005;
-    const double dt = 10e-8; //10e-8;
+    const double dt = 10e-8; //10e-8;*/
+
+    SimulationExecutor exec("/home/tim/Dokumente/Projects/CrankNicolson/build-CrankNicolson-Desktop-Default/simulation.json");    
     //const double lambda = dt / (2 * dx * dx);
 
-    SimulationParameter params(dx, dt, iterations, count);    
+    /*SimulationParameter params(dx, dt, iterations, count);
     Simulation sim(params, std::shared_ptr<ComplexHamiltonianSolver>(
                        new NonLinearHamiltonianSolver<std::complex<double>>(params, [] (double x) { return 0; }, 0.01)));
-    ScriptLoader(sim, "/home/tim/Dokumente/Projects/CrankNicolson/build-CrankNicolson-Desktop-Default/scripts");
+    ScriptExecutor(sim, "/home/tim/Dokumente/Projects/CrankNicolson/build-CrankNicolson-Desktop-Default/scripts");*/
     //sim.addWave(std::shared_ptr<ComplexWave>(new GaussianWave<std::complex<double>>(50, 400, 50000)));
     //sim.addWave(std::shared_ptr<ComplexWave>(new GaussianWave<std::complex<double>>(10, 600, -50000)));
     //sim.addFilter(new PotentialObservable(std::cout, V));
