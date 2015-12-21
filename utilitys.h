@@ -11,14 +11,14 @@
 
 namespace std {
      /**
-     * @brief is_complex Utility class for the application for
-     * [sfinae](https://de.wikipedia.org/wiki/Substitution_failure_is_not_an_error)
+     * @brief #is_complex utility class for the application for
+     * [sfinae](https://de.wikipedia.org/wiki/Substitution_failure_is_not_an_error).
      */
     template<class T> struct is_complex : std::false_type {};
 
     /**
-    * @brief is_complex Utility class for the application for
-    * [sfinae](https://de.wikipedia.org/wiki/Substitution_failure_is_not_an_error)
+    * @brief #is_complex utility class for the application for
+    * [sfinae](https://de.wikipedia.org/wiki/Substitution_failure_is_not_an_error).
     */
     template<class T> struct is_complex<std::complex<T>> : std::true_type {};
 }

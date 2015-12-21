@@ -6,14 +6,14 @@
 #include "SimulationParameter.h"
 
 /**
- * @brief LinearHamiltonianSolver Basic nonlinear Schrödinger equation solver
- *                                which solves the Crank Nicolson algorithm for soliton.
- * The HamiltonSolver solves the Schrödinger equation with the form
+ * @brief NonLinearHamiltonianSolver Basic nonlinear Schrödinger equation solver,
+ *                                   which solves the Crank Nicolson algorithm for solitons.
+ * The NonLinearHamiltonianSolver solves the Schrödinger equation with the form:
  * \f[
  *      (\frac{P^2}{2m} + V(r) + k\cdot|x(r,t)|^2)|x(r, t)\rangle = i\hbar \frac{\delta}{\delta t}|x(r,t)\rangle
  * \f]
- * with \f$V(r)\f$ potential at the position \f$r\f$.
- * The default solver used a left and a right matrix to solve the equation with
+ * with the \f$V(r)\f$ potential at the position \f$r\f$.
+ * The default solver used a left and a right matrix to solve the equation with:
  * \f[
  *      (1 + \frac{it}{2} H)|x(r,t)\rangle^{n+1} = (1 - \frac{it}{2} H)|x(r,t)\rangle^{n}
  * \f]
@@ -31,11 +31,11 @@ class NonLinearHamiltonianSolver : public HamiltonianSolver<T>
 {
 public:
     /**
-     * @brief NonLinearHamiltonianSolver construct the Hamiltonian matrix from the SimulationParamter and a potentialFunction
-     * @param Parameter The Parameter with time step and resolution
-     * @param PotentialFunction The potential function which must be a function of the form
+     * @brief NonLinearHamiltonianSolver construct the hamiltonian matrix from the SimulationParamter and a PotentialFunction.
+     * @param Parameter The Parameter with time step and resolution.
+     * @param PotentialFunction The potential function which must be a function of the form:
      *                          \f$ f:[0,1]\rightarrow\mathbb{R} \f$
-     * @param factor a factor for the influence of the \f$ |x(r,t)|^2 \f$ term
+     * @param factor A factor for the influence of the \f$ |x(r,t)|^2 \f$ term.
      */
     NonLinearHamiltonianSolver(SimulationParameter Parameter,
                          std::function<double (double)> PotentialFunction,
@@ -55,9 +55,9 @@ public:
     }
 
     /**
-     * @brief solve Solve the Equation for the wave function for the computed Hamiltonian
-     * @param current The current Wave vector of the simulation
-     * @return The new Wave in the next timestep of the Simulation
+     * @brief #solve Solve the Equation for the wave function for the computed hamiltonian.
+     * @param current The current wave vector of the simulation.
+     * @return The new wave in the next timestep of the simulation.
      */
     virtual Vector<T> solve(const Vector<T>& current) override {
         double absV = 0;
@@ -79,24 +79,24 @@ public:
     }
 
     /**
-     * @brief getHamiltonianMatrix Return the used Hamilton Matrix
-     * @return The Hamilton Matrix
+     * @brief #getHamiltonianMatrix Return the used Hamilton matrix.
+     * @return The Hamilton matrix.
      */
     virtual TridiagonalMatrix<T> getHamiltonianMatrix() override {
         return hamiltonian;
     }
 
     /**
-     * @brief getLeftMatrix The left assigned Matrix which may be used in the simulation
-     * @return The left assigned Matrix
+     * @brief #getLeftMatrix The left assigned matrix which may be used in the simulation.
+     * @return The left assigned matrix.
      */
     virtual TridiagonalMatrix<T> getLeftMatrix() override {
         return left;
     }
 
     /**
-     * @brief getRightMatrix The right assigned Matrix which may be used in the simulation
-     * @return The right assigned Matrix
+     * @brief #getRightMatrix The right assigned matrix which may be used in the simulation.
+     * @return The right assigned matrix.
      */
     virtual TridiagonalMatrix<T> getRightMatrix() override {
         return right;

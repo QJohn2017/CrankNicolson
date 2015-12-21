@@ -6,17 +6,21 @@
 #include "simulation.h"
 
 /**
- * @brief The ScriptLoader class load all scripts from a directory and execute them for the given simulation
+ * @brief The ScriptLoader class load all scripts from a directory and execute them for the given simulation.
  */
 class ScriptExecutor {
 public:
     /**
-     * @brief ScriptLoader Load all scripts from a directory and execute the scripts insite
-     * @param simulation The current simulation
-     * @param scriptDir The directory with the python scripts insite
+     * @brief ScriptLoader Load a script from a file and execute it.
+     * @param simulation The current simulation.
+     * @param scriptDir The directory with the python script inside.
      */
     ScriptExecutor(Simulation &simulation,
                  const std::string& scriptFile);
+
+    /**
+     * @brief ~ScriptLoader Destructor of the ScriptExecutor
+     */
     ~ScriptExecutor();
 
 private:

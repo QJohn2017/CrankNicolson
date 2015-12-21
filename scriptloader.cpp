@@ -38,29 +38,6 @@ namespace fs = boost::filesystem;
 
 
 class PythonSimulation;
-struct WaveCallback : Wave<std::complex<double>> {
-    WaveCallback(PyObject *p)
-        : self(p) {
-    }
-
-    std::complex<double> getDisplacement(unsigned int index) const {
-        return call_method<unsigned int>(self, "getDisplacement", index);
-    }
-
-    PyObject* self;
-};
-
-struct ObservableCallback : Observable {
-    ObservableCallback(PyObject *p, CheckTime Time)
-        : Observable(Time), self(p) {
-    }
-
-    virtual void filter(const Simulation& sim) {
-        call_method<Simulation>(self, "filter", sim);
-    }
-
-    PyObject* self;
-};
 
 template <typename T>
 struct HamiltonianSolverCallback : public HamiltonianSolver<T> {
@@ -183,6 +160,19 @@ private:
     std::vector<std::pair<boost::python::object, Observable&>> filters;
 };
 
+/*class PythonObservable : public Observable {
+public:
+    PythonObservable(CheckTime time) : Observable(time) {
+    }
+
+    virtual void filter(PythonSimulation* simulation) {
+        const Simulation& sim = static_cast<Simulation*>(simulation);
+        filter(sim);
+    }
+
+    virtual void filter(const Simulation& simulation) = 0;
+};*/
+
 /**
  * @brief The PythonPropertyOberservable struct
  */
@@ -260,11 +250,11 @@ private:
 };
 
 
-struct PythonStreamDensityObservable : public Observable {
-    PythonStreamDensityObservable(boost::python::object output)
+struct PythonProperbilityFluxObservable : public Observable {
+    PythonProperbilityFluxObservable(boost::python::object output)
         : Observable(CheckTime::Iteration) {
         stream.reset(new boost::iostreams::stream<PythonOutputDevice>(output));
-        obs.reset(new StreamDensity(*stream.get()));
+        obs.reset(new ProperbilityFluxObservable(*stream.get()));
     }
 
     virtual void filter(const Simulation& sim) {
@@ -272,7 +262,7 @@ struct PythonStreamDensityObservable : public Observable {
         stream->flush();
     }
 private:
-    std::shared_ptr<StreamDensity> obs;
+    std::shared_ptr<ProperbilityFluxObservable> obs;
     std::shared_ptr<std::ostream> stream;
 };
 
@@ -376,6 +366,36 @@ private:
     std::shared_ptr<NonLinearHamiltonianSolver<T>> solver;
 };
 
+struct WaveCallback : Wave<std::complex<double>> {
+    WaveCallback(PyObject *p)
+        : self(p) {
+    }
+
+    std::complex<double> getDisplacement(unsigned int index) const {
+        return call_method<unsigned int>(self, "getDisplacement", index);
+    }
+
+    PyObject* self;
+};
+
+struct ObservableCallback : Observable {
+    ObservableCallback(PyObject *p, CheckTime Time)
+        : Observable(Time), self(p) {
+    }
+
+    virtual void filter(boost::shared_ptr<PythonSimulation> sim) {
+        call_method<boost::shared_ptr<PythonSimulation>>(self, "filter", sim);
+    }
+
+    virtual void filter(const Simulation& sim) {
+        Simulation* k = const_cast<Simulation*>(&sim);
+        filter(boost::shared_ptr<PythonSimulation>(static_cast<PythonSimulation*>(k), [&](PythonSimulation* sim) {}));
+    }
+
+    PyObject* self;
+};
+
+
 BOOST_PYTHON_MODULE(CrankNicolson) {
     // math stuff
     class_<Vector<std::complex<double>>>("Vector", init<unsigned int>())
@@ -393,7 +413,7 @@ BOOST_PYTHON_MODULE(CrankNicolson) {
 
     enum_<typename TridiagonalMatrix<std::complex<double>>::Line>("Line")
             .value("Upper", TridiagonalMatrix<std::complex<double>>::Upper)
-            .value("Super", TridiagonalMatrix<std::complex<double>>::Diagonal)
+            .value("Diagonal", TridiagonalMatrix<std::complex<double>>::Diagonal)
             .value("Lower", TridiagonalMatrix<std::complex<double>>::Lower)
     ;
 
@@ -441,10 +461,10 @@ BOOST_PYTHON_MODULE(CrankNicolson) {
             .def("filter", &Observable::filter)
     ;
     class_<HamiltonianSolver<std::complex<double>>, boost::noncopyable, boost::shared_ptr<HamiltonianSolverCallback<std::complex<double>>>>("HamiltonianSolver", init<>())
-            .def("solve", &HamiltonianSolverCallback<std::complex<double>>::solve)
-            .def("getHamiltonianMatrix", &HamiltonianSolverCallback<std::complex<double>>::getHamiltonianMatrix)
-            .def("getLeftMatrix", &HamiltonianSolverCallback<std::complex<double>>::getLeftMatrix)
-            .def("getRightMatrix", &HamiltonianSolverCallback<std::complex<double>>::getRightMatrix)
+            .def("solve", &HamiltonianSolver<std::complex<double>>::solve)
+            .def("getHamiltonianMatrix", &HamiltonianSolver<std::complex<double>>::getHamiltonianMatrix)
+            .def("getLeftMatrix", &HamiltonianSolver<std::complex<double>>::getLeftMatrix)
+            .def("getRightMatrix", &HamiltonianSolver<std::complex<double>>::getRightMatrix)
     ;
 
     //basic waves
@@ -455,7 +475,7 @@ BOOST_PYTHON_MODULE(CrankNicolson) {
     class_<PythonRealPropertyOberservable, bases<Observable>>("RealProperbilityObservable", init<boost::python::object>());
     class_<PythonImaginaryPropertyOberservable, bases<Observable>>("ImaginaryProperbilityObservable", init<boost::python::object>());
     class_<PythonPotentialObservable, bases<Observable>>("PotentialObservable", init<boost::python::object, boost::python::object>());
-    class_<PythonStreamDensityObservable, bases<Observable>>("StreamDensityObservable", init<boost::python::object>());
+    class_<PythonProperbilityFluxObservable, bases<Observable>>("ProperbilityFluxObservable", init<boost::python::object>());
     class_<PythonExpectationValueObservable, bases<Observable>>("ExpectationValueObservable", init<boost::python::object>());
     class_<PythonEnergyValueObservable, bases<Observable>>("EnergyEigenvalueObservable", init<boost::python::object>());
 

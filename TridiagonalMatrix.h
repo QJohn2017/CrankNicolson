@@ -13,8 +13,8 @@
 #include "utilitys.h"
 
 /**
- * @brief TridiagonalMatrix Tridiagonal matrix storage for compression
- * The matrix has the form
+ * @brief TridiagonalMatrix Tridiagonal matrix storage for compression.
+ * The matrix has the form:
  * \f[
  *      \begin{pmatrix}
  *          a_1    & b_1    & 0      &   0     & \dots     & 0          \\
@@ -25,32 +25,32 @@
  *          0      & \dots  & 0      & 0       & c_n       & a_n        \\
  *      \end{pmatrix}
  * \f]
- * but only the diagonals are stored to simplify computation and reduce the memory usage.
- * Its posible to store every numerical value supports all mathematical field operations
+ * But only the diagonals are stored to simplify computation and reduce the memory usage.
+ * It is possible to store every numerical value supports all mathematical field operations.
  */
 template <typename T>
 class TridiagonalMatrix
 {
 public:
     /**
-     * @brief The Line enum
+     * @brief The Line enum.
      */
     enum Line {
-        Upper = 2,    //! The upper diagonal
-        Diagonal = 1, //! The main diagonal
-        Lower = 0     //! The lower diagonal
+        Upper = 2,    //! The upper diagonal.
+        Diagonal = 1, //! The main diagonal.
+        Lower = 0     //! The lower diagonal.
     };
 
     /**
-     * @brief TridiagonalMatrix default constructor for the TridiagonalMatrix
-     *        construct an empty matrix with no elements
+     * @brief TridiagonalMatrix Default constructor for the TridiagonalMatrix.
+     *        Construct an empty matrix with no elements.
      */
     TridiagonalMatrix() : size(0) {
     }
 
     /**
-     * @brief TridiagonalMatrix construct a new matrix with the given size and default constructed elements
-     * @param Size The number of elements along the main diagonal
+     * @brief TridiagonalMatrix Construct a new matrix with the given size and default constructed elements.
+     * @param Size The number of elements along the main diagonal.
      */
     TridiagonalMatrix(unsigned int Size) : size(Size) {
         for (int i = 0; i < 3; ++i) {
@@ -59,11 +59,11 @@ public:
     }
 
     /**
-     * @brief identity Construct a identity matrix with defaultValue elements a the main diagonal
-     *                 and zero at the other elements
-     * @param size The size of the Matrix to construct, this is equal to the number of elements along the main diagonal
-     * @param defaultValue The value which should be set at the main diagonal
-     * @return The constructed Matrix
+     * @brief #identity Construct a identity matrix with defaultValue elements a the main diagonal
+     *                 and zero at the other elements.
+     * @param size The size of the Matrix to construct, this is equal to the number of elements along the main diagonal.
+     * @param defaultValue The value which should be set at the main diagonal.
+     * @return The constructed Matrix.
      */
     static TridiagonalMatrix<T> identity(unsigned int size, T defaultValue) {
         TridiagonalMatrix<T> mat(size);
@@ -74,11 +74,11 @@ public:
     }
 
     /**
-     * @brief operator + Addition operator, which adds another TridiagonalMatrix to the current current one.
-     *                   This returns a new TridiagonalMatrix with the added elements
-     * @param other The TridiagonalMatrix to add
-     * @require The other TridiagonalMatrix must have the same size as the current one
-     * @return The added TridiagonalMatrix in a new object
+     * @brief #operator + Addition operator, which adds another TridiagonalMatrix to the current current one.
+     *                   This returns a new TridiagonalMatrix with the added elements.
+     * @param other The TridiagonalMatrix to add.
+     * @require The other TridiagonalMatrix must have the same size as the current one.
+     * @return The added TridiagonalMatrix in a new object.
      */
     TridiagonalMatrix operator + (TridiagonalMatrix other) {
         assert (size == other.size);
@@ -92,11 +92,11 @@ public:
     }
 
     /**
-     * @brief operator += Addition operator, which adds another TridiagonalMatrix to the current current one.
-     *                   This returns this matrix with inplace added elements
-     * @param other The TridiagonalMatrix to add
-     * @require The other TridiagonalMatrix must have the same size as the current one
-     * @return The current Matrix with inplace added Elements
+     * @brief #operator += Addition operator, which adds another TridiagonalMatrix to the current one.
+     *                     This returns this matrix with inplace added elements.
+     * @param other The TridiagonalMatrix to add.
+     * @require The other TridiagonalMatrix must have the same size as the current one.
+     * @return The current Matrix with inplace added elements.
      */
     TridiagonalMatrix operator += (TridiagonalMatrix other) {
         assert (size == other.size);
@@ -109,11 +109,11 @@ public:
     }
 
     /**
-     * @brief operator - Subtraction operator, which subtracts another TridiagonalMatrix to the current current one.
-     *                   This returns a new TridiagonalMatrix with the subtracted elements
-     * @param other The TridiagonalMatrix to subtract
-     * @require The other TridiagonalMatrix must have the same size as the current one
-     * @return The subtracted TridiagonalMatrix in a new object
+     * @brief #operator - Subtraction operator, which subtracts another TridiagonalMatrix to the current one.
+     *                    This returns a new TridiagonalMatrix with the subtracted elements.
+     * @param other The TridiagonalMatrix to subtract.
+     * @require The other TridiagonalMatrix must have the same size as the current one.
+     * @return The subtracted TridiagonalMatrix in a new object.
      */
     TridiagonalMatrix operator - (TridiagonalMatrix other) {
         assert (size == other.size);
@@ -127,11 +127,11 @@ public:
     }
 
     /**
-     * @brief operator -= Subtraction operator, which subtracts another TridiagonalMatrix to the current current one.
-     *                    This returns this matrix with inplace subtracted elements
-     * @param other The TridiagonalMatrix to subtract
-     * @require The other TridiagonalMatrix must have the same size as the current one
-     * @return The current Matrix with inplace subtracted Elements
+     * @brief #operator -= Subtraction operator, which subtracts another TridiagonalMatrix to the current one.
+     *                     This returns this matrix with inplace subtracted elements.
+     * @param other The TridiagonalMatrix to subtract.
+     * @require The other TridiagonalMatrix must have the same size as the current one.
+     * @return The current Matrix with inplace subtracted elements.
      */
     TridiagonalMatrix operator -= (TridiagonalMatrix other) {
         assert (size == other.size);
@@ -144,10 +144,10 @@ public:
     }
 
     /**
-     * @brief operator * Multiplication operator, which multiplies a factor to the current current TridiagonalMatrix.
-     *                   This returns a new TridiagonalMatrix with the multiplied factor
-     * @param other The factor to multiply the matrix with
-     * @return The resulting TridiagonalMatrix in a new object
+     * @brief #operator * Multiplication operator, which multiplies a factor to the current TridiagonalMatrix.
+     *                   This returns a new TridiagonalMatrix with the multiplied factor.
+     * @param other The factor to multiply the matrix with.
+     * @return The resulting TridiagonalMatrix in a new object.
      */
     TridiagonalMatrix operator * (const T& other) {
         TridiagonalMatrix m(*this);
@@ -160,29 +160,29 @@ public:
     }
 
     /**
-     * @brief operator * Multiplication operator, which multiplies a Vector with current current TridiagonalMatrix.
-     *                   This returns a new Vector results form the Matrix multiplication
-     * @param other The Vector to multiply the matrix with
-     * @return The resulting Vector in a new object
+     * @brief #operator * Multiplication operator, which multiplies a Vector with current TridiagonalMatrix.
+     *                    This returns a new Vector results form the Matrix multiplication.
+     * @param other The Vector to multiply the matrix with.
+     * @return The resulting Vector in a new object.
      */
     template <typename U>
     friend Vector<U> operator * (const TridiagonalMatrix<U>& mat, const Vector<U>& other);
 
     /**
-     * @brief operator * Multiplication operator, which multiplies a Vector with current current TridiagonalMatrix.
-     *                   This returns a new Vector results form the Matrix multiplication
-     * @param other The Vector to multiply the matrix with
-     * @return The resulting Vector in a new object
+     * @brief #operator * Multiplication operator, which multiplies a Vector with current TridiagonalMatrix.
+     *                    This returns a new Vector results form the Matrix multiplication.
+     * @param other The Vector to multiply the matrix with.
+     * @return The resulting Vector in a new object.
      */
     template <typename U>
     friend Vector<U> operator * (const Vector<U>& other, const TridiagonalMatrix<U>& mat);
 
     /**
-     * @brief operator () The index operator to access elements by the diagonal and the index
-     * @param line The diagonal of the element
-     * @param j The index at the diagonal
-     * @require The index must be smaller than the size of the matrix
-     * @return The element at the diagonal with the given index
+     * @brief #operator () The index operator to access elements by the diagonal and the index.
+     * @param line The diagonal of the element.
+     * @param j The index at the diagonal.
+     * @require The index must be smaller than the size of the matrix.
+     * @return The element at the diagonal with the given index.
      */
     T& operator () (Line line, unsigned int j) {
         assert(line < 3 && j < size);
@@ -190,11 +190,11 @@ public:
     }
 
     /**
-     * @brief operator () The index operator to access elements by the diagonal and the index
-     * @param line The diagonal of the element
-     * @param j The index at the diagonal
-     * @require The index must be smaller than the size of the matrix
-     * @return The element at the diagonal with the given index
+     * @brief #operator () The index operator to access elements by the diagonal and the index.
+     * @param line The diagonal of the element.
+     * @param j The index at the diagonal.
+     * @require The index must be smaller than the size of the matrix.
+     * @return The element at the diagonal with the given index.
      */
     T operator () (Line line, unsigned int j) const {
         assert(line < 3 && j < size);
@@ -202,14 +202,14 @@ public:
     }
 
     /**
-     * @brief solve Solve a linear equation system with the given matrix and the resulting vector.
-     *              This has the mathematical form
-     *              \f[
-     *                  Ax = b
-     *              \f]
-     * @param vec The resulting vector. In this case the b vector
-     * @require The vector must have the same size as the matrix
-     * @return The x vector of the system
+     * @brief #solve Solve a linear equation system with the given matrix and the resulting vector.
+     *               This has the mathematical form:
+     *               \f[
+     *                   Ax = b
+     *               \f]
+     * @param vec The resulting vector (In this case the b vector).
+     * @require The vector must have the same size as the matrix.
+     * @return The x vector of the system.
      */
     Vector<T> solve(const Vector<T>& vec) {
         assert(size == vec.size());
@@ -234,10 +234,10 @@ public:
     }
 
     /**
-     * @brief getEigenvalues Return the eigenvalues of the Matrix in accending order
+     * @brief #getEigenvalues Return the eigenvalues of the Matrix in accending order.
      * @param error The error value for the non diagonal elements. For smaller errors use a smaller error value.
-     * @return The Eigenvalues organised in a std::vector
-     * @note The used algorithm is the qr algorithm for symmetric tridiagonal matrices so be carefull if your not using symmetric matrices
+     * @return The Eigenvalues organised in a std::vector<T>.
+     * @note The used algorithm is the qr algorithm for symmetric tridiagonal matrices so be carefull if your not using symmetric matrices.
      */
     template <typename U>
     typename std::enable_if<!std::is_complex<U>::value, Vector<U>>::type getEigenvalues(U error = 0.00001) {
@@ -259,10 +259,10 @@ public:
     }
 
     /**
-     * @brief getEigenvalues Return the eigenvalues of the Matrix in accending order
+     * @brief #getEigenvalues Return the eigenvalues of the Matrix in accending order.
      * @param error The error value for the non diagonal elements. For smaller errors use a smaller error value.
-     * @return The Eigenvalues organised in a std::vector
-     * @note The used algorithm is the qr algorithm for symmetric tridiagonal matrices so be carefull if your not using symmetric matrices
+     * @return The Eigenvalues organised in a std::vector<T>
+     * @note The used algorithm is the qr algorithm for symmetric tridiagonal matrices so be carefull if your not using symmetric matrices.
      */
     template <typename U>
     typename std::enable_if<std::is_complex<U>::value, Vector<typename U::value_type>>::type getEigenvalues(typename U::value_type error = typename U::value_type(0.00001)) {
@@ -284,12 +284,12 @@ public:
     }
 
     /**
-     * @brief getExpectationValue computes the expectation value of an operator
+     * @brief #getExpectationValue computes the expectation value of an operator:
      *        \f[
-     *          <A>_{\phi} =
+     *          <A>_{\phi} = \langle\phi|A|\phi\rangle
      *        \f]
-     * @param vec The state to be expected
-     * @return The properbility of the expected state
+     * @param vec The properbiltiy of the expected state.
+     * @return The properbility of the expected state.
      */
     T getExpectationValue(const Vector<T>& vec) const {
         Vector<T> result = (*this) * vec;
@@ -297,9 +297,9 @@ public:
     }
 
     /**
-     * @brief getSize Return the size of the Matrix elements.
-     *                This is equal to the number of elements along the main diagonal
-     * @return The size of the Matrix
+     * @brief #getSize Return the size of the matrix elements.
+     *                This is equal to the number of elements along the main diagonal.
+     * @return The size of the matrix.
      */
     unsigned int getSize() const { return size; }
 

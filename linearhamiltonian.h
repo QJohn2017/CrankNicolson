@@ -8,13 +8,13 @@
 #include "utilitys.h"
 
 /**
- * @brief LinearHamiltonianSolver Basic linear Schrödinger equation solver which solves the Crank Nicolson algorithm.
- * The HamiltonSolver solves the Schrödinger equation with the form
+ * @brief Basic linear Schrödinger equation solver which solves the Crank Nicolson algorithm.
+ * The LinearHamiltonianSolver solves the Schrödinger equation with the form
  * \f[
  *      (\frac{P^2}{2m} + V(r))|x(r, t)\rangle = i\hbar \frac{\delta}{\delta t}|x(r,t)\rangle
  * \f]
- * with \f$V(r)\f$ potential at the position \f$r\f$.
- * The default solver used a left and a right matrix to solve the equation with
+ * with the \f$V(r)\f$ potential at the position \f$r\f$.
+ * The default solver used a left and a right matrix to solve the equation with:
  * \f[
  *      (1 + \frac{it}{2h} H)|x(r,t)\rangle^{n+1} = (1 - \frac{it}{2h} H)|x(r,t)\rangle^{n}
  * \f]
@@ -32,9 +32,9 @@ class LinearHamiltonianSolver : public HamiltonianSolver<T>
 {
 public:
     /**
-     * @brief LinearHamiltonianSolver construct the Hamiltonian matrix from the SimulationParamter and a potentialFunction
+     * @brief LinearHamiltonianSolver construct the Hamiltonian matrix from the SimulationParamter and a PotentialFunction
      * @param Parameter The Parameter with time step and resolution
-     * @param PotentialFunction The potential function which must be a function of the form
+     * @param PotentialFunction The potential function which must be a function of the form:
      *                          \f$ f:[0,1]\rightarrow\mathbb{R} \f$
      */
     LinearHamiltonianSolver(SimulationParameter Parameter,
@@ -55,33 +55,33 @@ public:
     }
 
     /**
-     * @brief solve Solve the Equation for the wave function for the computed Hamiltonian
-     * @param current The current Wave vector of the simulation
-     * @return The new Wave in the next timestep of the Simulation
+     * @brief #solve Solve the equation for the wave function for the computed hamiltonian.
+     * @param current The current wave vector of the simulation.
+     * @return The new wave in the next timestep of the simulation.
      */
     virtual Vector<T> solve(const Vector<T>& current) override {
         return getLeftMatrix().solve(getRightMatrix() * current);
     }
 
     /**
-     * @brief getHamiltonianMatrix Return the used Hamilton Matrix
-     * @return The Hamilton Matrix
+     * @brief #getHamiltonianMatrix Return the used hamilton matrix.
+     * @return The Hamilton Matrix.
      */
     virtual TridiagonalMatrix<T> getHamiltonianMatrix() override {
         return hamiltonian;
     }
 
     /**
-     * @brief getLeftMatrix The left assigned Matrix which may be used in the simulation
-     * @return The left assigned Matrix
+     * @brief #getLeftMatrix The left assigned matrix which may be used in the simulation.
+     * @return The left assigned Matrix.
      */
     virtual TridiagonalMatrix<T> getLeftMatrix() override {
         return left;
     }
 
     /**
-     * @brief getRightMatrix The right assigned Matrix which may be used in the simulation
-     * @return The right assigned Matrix
+     * @brief #getRightMatrix The right assigned matrix which may be used in the simulation.
+     * @return The right assigned matrix.
      */
     virtual TridiagonalMatrix<T> getRightMatrix() override {
         return right;

@@ -13,29 +13,24 @@ def phononPotential(x):
 		off = abs(atoms[index] - atoms[index - 1]) ** 2 + abs(atoms[index] - atoms[index + 1]) ** 2
 	return 0.5 * omega**2 * off
 
-def potentialWell(x):
-	if (x < 0.300 or x > 0.700):
-        	return 10 * 10**5
-	return 0
 
-def hamonicalPotential(x):
-	omega = 10
-	return 0.5 * omega ** 2 * (x - 0.5)
+outfile = open("Phonon.dat", "w")
 
-outfile = open("TestData.dat", "w")
 #set the current solver for the crank nicolson algorithm here the non linear hamiltonian solver to solve soliton waves
-simulation.setSolver(cn.NonLinearHamiltonianSolver(simulation, phononPotential, 0.001)) # 0.01
+simulation.setSolver(cn.LinearHamiltonianSolver(simulation, phononPotential)
 
 #add a new Gaussian wave to the simulation with the width of 50 at the position 400 and with wavevector length of 50000
-simulation.addWave(cn.GaussianWave(50.0, 400.0, 50000.0))
-#add a new Gaussian wave to the simulation with the width of 20 at the position 600 and with wavevector length of -50000
-#simulation.addWave(cn.GaussianWave(20.0, 600.0, -50000.0))
+simulation.addWave(cn.GaussianWave(100.0, 500.0, 50000.0))
 
 #add a observable for the simulation. In this case the observable is the Properbility which gets writen on stdout
-simulation.addFilter(cn.ProperbilityObservable(outfile)) #sys.stdout
+simulation.addFilter(cn.ProperbilityObservable(outfile))
+
 #add also an observable for the potential only writes ones to stdout at the start of the simulation
-#simulation.addFilter(cn.PotentialObservable(outfile, phononPotential)) #sys.stdout
+simulation.addFilter(cn.PotentialObservable(outfile, phononPotential)) #sys.stdout
+
+#add a stream density observable
+#simulation.addFilter(cn.StreamDensityObservable(streamfile))
 
 #write the plot file
-util.plot.writeStaticPlotScript("TestData.static.plot", "TestData.dat", 1)
-util.plot.writeAnimatedPlotScipt("TestData.dynamic.plot", "TestData.dat", simulation.getParameter().iterations)
+util.plot.writeStaticPlotScript("Phonon.static.plot", "Phonon.dat", 1)
+util.plot.writeAnimatedPlotScipt("Phonon.dynamic.plot", "Phonon.dat", simulation.getParameter().iterations)

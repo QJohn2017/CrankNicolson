@@ -3,27 +3,24 @@
 #include "observable.h"
 #include "simulation.h"
 
-
-class StreamDensity : public Observable
+/**
+ * @brief The ProperbilityFluxObservable class calculates the proberbility flux for every simulation step.
+ */
+class ProperbilityFluxObservable : public Observable
 {
 public:
-    StreamDensity(std::ostream& output)
+    /**
+     * @brief ProperbilityFluxObservable calculates the proberbility flux for every step.
+     * @param output The output stream to write into.
+     */
+    ProperbilityFluxObservable(std::ostream& output)
         : Observable(CheckTime::Iteration) {
         stream.reset(&output, [] (std::ostream* s) {});
     }
 
     /**
-     * @brief filter
-     * @param sim
-     *
-     * j = h/m * Im(p* d/dx p)
-     * grad (p) = (p(x + dx) - p(x)) / dx
-     * p(x)* (A p(x) - p(x)) / dx
-     * (p(x)* A p(x) - p(x)*p(x)) / d
-     *
-     * => (<p|A|p> - <p|p>) / d
-     * => j = h/(d*m) * Im(<p|A|p> - <p|p>)
-     * A = (1 - l*H)^(-1) * (1 + l*H)
+     * @brief #filter Calculates the properbility flux for every step.
+     * @param sim The current simulation step.
      */
     virtual void filter(const Simulation& sim) {
         const ComplexVector atoms = sim.getAtoms();
