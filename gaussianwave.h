@@ -17,7 +17,7 @@ class GaussianWave : public Wave<T>
 {
 public:
     /**
-     * @brief construct a new wave at the given position, width and the with the wavevector k
+     * @brief GaussianWave construct a new wave at the given position, width and the with the wavevector k
      * @param Width The wave width this equals to \f$\sigma\f$ in the equation
      * @param Pos the position of the wave equals to \f$x_0\f$ in the equation
      * @param K the wavevector of the wave equals to \f$k_0\f$ in the equation
