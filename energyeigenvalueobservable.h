@@ -14,7 +14,7 @@ class EnergyEigenvalueObservable : public Observable
 {
 public:
     /**
-     * @brief EnergyEigenvalueObservable construct a new Oberservable to filter the energy eigenvalues from the hamiltonian
+     * @brief construct a new Oberservable to filter the energy eigenvalues from the hamiltonian
      * @param output The stream to write the data into
      */
     EnergyEigenvalueObservable(std::ostream& output)
@@ -23,7 +23,7 @@ public:
     }
 
     /**
-     * @brief filter Filter the energy eigenvalues from the hamiltonian
+     * @brief #filter Filter the energy eigenvalues from the hamiltonian
      * @param sim The current simulation step
      */
     virtual void filter(const Simulation& sim) {

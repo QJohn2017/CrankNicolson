@@ -12,7 +12,7 @@ class ExpectationValueObservable : public Observable
 {
 public:
     /**
-     * @brief EnergyEigenvalueObservable construct a new Oberservable to filter the expectation value
+     * @brief construct a new Oberservable to filter the expectation value
      * @param output The stream to write the data into
      */
     ExpectationValueObservable(std::ostream& output)
@@ -21,7 +21,7 @@ public:
     }
 
     /**
-     * @brief filter Filter the expectation value from the hamiltonian
+     * @brief #filter Filter the expectation value from the hamiltonian
      * @param sim The current simulation step
      */
     virtual void filter(const Simulation& sim) {

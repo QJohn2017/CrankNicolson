@@ -17,7 +17,7 @@ using namespace boost::program_options;
 int main(int argc, char** argv) {
     options_description desc(
         "Crank Nicolson solver for one dimensional waves.\n"
-        "This program solves the timedependent schroedinger equation\n"
+        "This program solves the timedependent Schroedinger equation\n"
         "for one dimensional waves.\n"
         "The only parameter which is nessesary is the simulation file.\n"
         "This simulation file contains the data and\na path to a script to run a simulation.\n"

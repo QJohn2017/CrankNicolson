@@ -7,14 +7,14 @@
 #include <memory>
 
 /**
- * @brief The ProperbilityOberservable class Observable which filters the properbility of the wave function for every step
+ * @brief The ProperbilityOberservable class is an observable, which filters the properbility of the wave function for every step.
  */
 class ProperbilityOberservable : public Observable
 {
 public:
     /**
-     * @brief ProperbilityOberservable construct a new Oberservable to filter the properbility of the wave
-     * @param output The stream to write the data into
+     * @brief ProperbilityOberservable Construct a new Oberservable to filter the properbility of the wave.
+     * @param output The stream to write the data into.
      */
     ProperbilityOberservable(std::ostream& output)
         : Observable(Observable::Iteration) {
@@ -22,7 +22,7 @@ public:
     }
 
     /**
-     * @brief filter Filter the potential
+     * @brief #filter Filter the potential.
      * @param sim The current simulation step
      */
     virtual void filter(const Simulation& sim) {
@@ -53,15 +53,15 @@ private:
 
 
 /**
- * @brief The ImaginaryProperbilityOberservable class Observable which filters
- *        the real part of the properbility of the wave function for every step
+ * @brief The RealProperbilityOberservable class is an observable, which filters
+ *        the real part of the properbility from the wave function for every step.
  */class RealProperbilityOberservable : public Observable
 {
 public:
     /**
-     * @brief ProperbilityOberservable construct a new Oberservable to filter
-     *        the real part of the properbility of the wave
-     * @param output The stream to write the data into
+     * @brief RealProperbilityOberservable construct a new oberservable to filter
+     *        the real part of the properbility from the wave.
+     * @param output The stream to write the data into.
      */
     RealProperbilityOberservable(std::ostream& output)
         : Observable(Observable::Iteration) {
@@ -69,8 +69,8 @@ public:
     }
 
     /**
-     * @brief filter Filter the real part of the proberbility of the wave
-     * @param sim The current simulation step
+     * @brief #filter Filter the real part of the proberbility from the wave.
+     * @param sim The current simulation step.
      */
     virtual void filter(const Simulation& sim) {
         ComplexVector v = sim.getAtoms();
@@ -90,16 +90,16 @@ private:
 
 
 /**
- * @brief The ImaginaryProperbilityOberservable class Observable which filters
- *        the imaginary part of the properbility of the wave function for every step
+ * @brief The ImaginaryProperbilityOberservable class is an observable, which filters
+ *        the imaginary part of the properbility from the wave function for every step.
  */
 class ImaginaryProperbilityOberservable : public Observable
 {
 public:
     /**
-     * @brief ProperbilityOberservable construct a new Oberservable to filter
-     *        the imaginary part of the properbility of the wave
-     * @param output The stream to write the data into
+     * @brief ImaginaryProperbilityOberservable construct a new oberservable to filter
+     *        the imaginary part of the properbility from the wave.
+     * @param output The stream to write the data into.
      */
     ImaginaryProperbilityOberservable(std::ostream& output)
         : Observable(Observable::Iteration) {
@@ -107,8 +107,8 @@ public:
     }
 
     /**
-     * @brief filter Filter the imaginary part of the properbility of the wave
-     * @param sim The current simulation step
+     * @brief #filter Filter the imaginary part of the properbility of the wave.
+     * @param sim The current simulation step.
      */
     virtual void filter(const Simulation& sim) {
         ComplexVector v = sim.getAtoms();
