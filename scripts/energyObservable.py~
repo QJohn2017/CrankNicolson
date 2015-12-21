@@ -1,6 +1,0 @@
-import CrankNicolson
-
-#add a new Gaussian wave to the simulation with the width of 50 at the position 400 and with wavevector length of 50000
-simulation.addWave(CrankNicolson.GaussianWave(50.0, 400.0, 50000.0))
-simulation.addWave(CrankNicolson.GaussianWave(10.0, 600.0, -50000.0))
-
