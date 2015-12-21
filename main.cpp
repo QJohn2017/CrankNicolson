@@ -2,58 +2,51 @@
 #include <complex>
 #include <fstream>
 
-#include "TridiagonalMatrix.h"
-#include "simulation.h"
-
-#include "potentialobservable.h"
-#include "properbilityoberservable.h"
-
-#include "linearhamiltonian.h"
-#include "nonlinearhamiltonian.h"
-
-#include "gaussianwave.h"
-
-#include "scriptloader.h"
+#include <boost/program_options/options_description.hpp>
+#include <boost/program_options/parsers.hpp>
+#include <boost/program_options/variables_map.hpp>
+#include <boost/tokenizer.hpp>
+#include <boost/token_functions.hpp>
 
 #include "simulationexecutor.h"
+#include "TridiagonalMatrix.h"
 
-using namespace std;
+using namespace boost;
+using namespace boost::program_options;
 
-double V(double x) {
-    return 0;
-    /*if (x < 0.300 || x > 0.700) {
-        return 10 * 10^5;
+int main(int argc, char** argv) {
+    options_description desc(
+        "Crank Nicolson solver for one dimensional waves.\n"
+        "This program solves the timedependent schroedinger equation\n"
+        "for one dimensional waves.\n"
+        "The only parameter which is nessesary is the simulation file.\n"
+        "This simulation file contains the data and\na path to a script to run a simulation.\n"
+    );
+    desc.add_options()
+            ("help,h", "Show this help text")
+            ("files,f", value<std::vector<std::string>>(), "Simulation files");
+
+    variables_map vm;
+    try {
+        store(command_line_parser(argc, argv).options(desc).run(), vm);
+        notify(vm);
+    } catch (std::exception &e) {
+        std::cout << e.what() << std::endl;
+        std::cout << desc << std::endl;
     }
-    return 0;
 
-    /*if (x > 0.620 && x < 0.640) {
-        return 2.0 * 10e5; //1.8 * 10e5
-    }*/
+    if (vm.count("help")) {
+        desc.print(std::cout);
+    }
 
-    //return pow(x - 0.5, 2) * 8;
-    //Nette Potentiale
-    //((x - 520)) * ((x - 520)) * 45;
-    //return (pow(x - 0.5, 2) - pow(x - 0.5, 4));
-    //return 0;
-}
+    if (vm.count("files")) {
+        std::vector<std::string> files = vm["files"].as<std::vector<std::string>>();
+        for (auto file : files) {
+            std::cout << "process file: " << file << std::endl;
+            SimulationExecutor(file.c_str()); //only call constructor
+        }
+    }
 
-int main() {
-    /*const unsigned int iterations = 1000;
-    const unsigned int count = 1000;
-    const double dx = 0.0005;
-    const double dt = 10e-8; //10e-8;*/
-
-    SimulationExecutor exec("/home/tim/Dokumente/Projects/CrankNicolson/build-CrankNicolson-Desktop-Default/simulation.json");    
-    //const double lambda = dt / (2 * dx * dx);
-
-    /*SimulationParameter params(dx, dt, iterations, count);
-    Simulation sim(params, std::shared_ptr<ComplexHamiltonianSolver>(
-                       new NonLinearHamiltonianSolver<std::complex<double>>(params, [] (double x) { return 0; }, 0.01)));
-    ScriptExecutor(sim, "/home/tim/Dokumente/Projects/CrankNicolson/build-CrankNicolson-Desktop-Default/scripts");*/
-    //sim.addWave(std::shared_ptr<ComplexWave>(new GaussianWave<std::complex<double>>(50, 400, 50000)));
-    //sim.addWave(std::shared_ptr<ComplexWave>(new GaussianWave<std::complex<double>>(10, 600, -50000)));
-    //sim.addFilter(new PotentialObservable(std::cout, V));
-    //sim.addFilter(new ProperbilityOberservable(std::cout));
     return 0;
 }
 

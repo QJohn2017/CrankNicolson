@@ -3,7 +3,9 @@
 #include <complex>
 #include <functional>
 #include "hamiltonian.h"
+
 #include "SimulationParameter.h"
+#include "utilitys.h"
 
 /**
  * @brief LinearHamiltonianSolver Basic linear Schrödinger equation solver which solves the Crank Nicolson algorithm.
@@ -14,15 +16,15 @@
  * with \f$V(r)\f$ potential at the position \f$r\f$.
  * The default solver used a left and a right matrix to solve the equation with
  * \f[
- *      (1 + \frac{it}{2} H)|x(r,t)\rangle^{n+1} = (1 - \frac{it}{2} H)|x(r,t)\rangle^{n}
+ *      (1 + \frac{it}{2h} H)|x(r,t)\rangle^{n+1} = (1 - \frac{it}{2h} H)|x(r,t)\rangle^{n}
  * \f]
  * with
  * \f[
- *      Left := 1 + \frac{i\Delta t}{2} H
+ *      Left := 1 + \frac{i\Delta t}{2h} H
  * \f]
  * and
  * \f[
- *      Right := 1 - \frac{i\Delta t}{2} H
+ *      Right := 1 - \frac{i\Delta t}{2h} H
  * \f]
  */
 template <typename T>

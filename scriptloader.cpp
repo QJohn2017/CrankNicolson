@@ -21,8 +21,13 @@
 #include "observable.h"
 #include "gaussianwave.h"
 #include "pythoninputdevice.h"
+
 #include "potentialobservable.h"
 #include "properbilityoberservable.h"
+#include "energyeigenvalueobservable.h"
+#include "expectationvalueobservable.h"
+
+#include "streamdensity.h"
 
 #include "linearhamiltonian.h"
 #include "nonlinearhamiltonian.h"
@@ -198,6 +203,40 @@ private:
     std::shared_ptr<std::ostream> stream;
 };
 
+struct PythonRealPropertyOberservable : public Observable {
+    PythonRealPropertyOberservable(boost::python::object ob)
+        : Observable(CheckTime::Iteration) {
+        stream.reset(new boost::iostreams::stream<PythonOutputDevice>(ob));
+        prob.reset(new RealProperbilityOberservable(*stream.get()));
+    }
+
+    virtual void filter(const Simulation& sim) {
+        prob->filter(sim);
+        stream->flush();
+    }
+
+private:
+    std::shared_ptr<RealProperbilityOberservable> prob;
+    std::shared_ptr<std::ostream> stream;
+};
+
+struct PythonImaginaryPropertyOberservable : public Observable {
+    PythonImaginaryPropertyOberservable(boost::python::object ob)
+        : Observable(CheckTime::Iteration) {
+        stream.reset(new boost::iostreams::stream<PythonOutputDevice>(ob));
+        prob.reset(new ImaginaryProperbilityOberservable(*stream.get()));
+    }
+
+    virtual void filter(const Simulation& sim) {
+        prob->filter(sim);
+        stream->flush();
+    }
+
+private:
+    std::shared_ptr<ImaginaryProperbilityOberservable> prob;
+    std::shared_ptr<std::ostream> stream;
+};
+
 struct PythonPotentialObservable : public Observable {
     PythonPotentialObservable(boost::python::object output, boost::python::object f)
         : Observable(CheckTime::Startup) {
@@ -219,6 +258,57 @@ private:
     std::shared_ptr<std::ostream> stream;
     boost::python::object func;
 };
+
+
+struct PythonStreamDensityObservable : public Observable {
+    PythonStreamDensityObservable(boost::python::object output)
+        : Observable(CheckTime::Iteration) {
+        stream.reset(new boost::iostreams::stream<PythonOutputDevice>(output));
+        obs.reset(new StreamDensity(*stream.get()));
+    }
+
+    virtual void filter(const Simulation& sim) {
+        obs->filter(sim);
+        stream->flush();
+    }
+private:
+    std::shared_ptr<StreamDensity> obs;
+    std::shared_ptr<std::ostream> stream;
+};
+
+struct PythonEnergyValueObservable : public Observable {
+    PythonEnergyValueObservable(boost::python::object output)
+        : Observable(CheckTime::Startup) {
+        stream.reset(new boost::iostreams::stream<PythonOutputDevice>(output));
+        obs.reset(new EnergyEigenvalueObservable(*stream.get()));
+    }
+
+    virtual void filter(const Simulation& sim) {
+        obs->filter(sim);
+        stream->flush();
+    }
+private:
+    std::shared_ptr<EnergyEigenvalueObservable> obs;
+    std::shared_ptr<std::ostream> stream;
+};
+
+
+struct PythonExpectationValueObservable : public Observable {
+    PythonExpectationValueObservable(boost::python::object output)
+        : Observable(CheckTime::Iteration) {
+        stream.reset(new boost::iostreams::stream<PythonOutputDevice>(output));
+        obs.reset(new ExpectationValueObservable(*stream.get()));
+    }
+
+    virtual void filter(const Simulation& sim) {
+        obs->filter(sim);
+        stream->flush();
+    }
+private:
+    std::shared_ptr<ExpectationValueObservable> obs;
+    std::shared_ptr<std::ostream> stream;
+};
+
 
 template <typename T>
 class PythonLinearHamiltonianSolver : public HamiltonianSolver<T> {
@@ -337,6 +427,7 @@ BOOST_PYTHON_MODULE(CrankNicolson) {
 
     class_<PythonSimulation, boost::noncopyable, boost::shared_ptr<PythonSimulation>>("Simulation", no_init)
             .def("setSolver", &PythonSimulation::setSolver)
+            .def("getSolver", &PythonSimulation::getSolver, return_value_policy<reference_existing_object>())
             .def("addWave", &PythonSimulation::addWave)
             .def("addFilter", &PythonSimulation::addFilter)
             .def("run", &PythonSimulation::run)
@@ -361,7 +452,12 @@ BOOST_PYTHON_MODULE(CrankNicolson) {
 
     //basic observables
     class_<PythonPropertyOberservable, bases<Observable>>("ProperbilityObservable", init<boost::python::object>());
+    class_<PythonRealPropertyOberservable, bases<Observable>>("RealProperbilityObservable", init<boost::python::object>());
+    class_<PythonImaginaryPropertyOberservable, bases<Observable>>("ImaginaryProperbilityObservable", init<boost::python::object>());
     class_<PythonPotentialObservable, bases<Observable>>("PotentialObservable", init<boost::python::object, boost::python::object>());
+    class_<PythonStreamDensityObservable, bases<Observable>>("StreamDensityObservable", init<boost::python::object>());
+    class_<PythonExpectationValueObservable, bases<Observable>>("ExpectationValueObservable", init<boost::python::object>());
+    class_<PythonEnergyValueObservable, bases<Observable>>("EnergyEigenvalueObservable", init<boost::python::object>());
 
     //basic solver
     class_<PythonLinearHamiltonianSolver<std::complex<double>>, bases<HamiltonianSolver<std::complex<double>>>>("LinearHamiltonianSolver", init<PythonSimulation*, boost::python::object>());
@@ -371,7 +467,6 @@ BOOST_PYTHON_MODULE(CrankNicolson) {
 ScriptExecutor::ScriptExecutor(Simulation &simulation,
                            const std::string& scriptFile) {
     namespace python = boost::python;
-
     Py_Initialize();
 
     // Set working dir in python

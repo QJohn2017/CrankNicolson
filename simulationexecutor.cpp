@@ -20,6 +20,7 @@ SimulationExecutor::SimulationExecutor(const std::string& filename) {
             const ptree& child = it->second;
             SimulationParameter params(child.get<double>("dx"),
                                        child.get<double>("dt"),
+                                       child.get<double>("mass"),
                                        child.get<int>("iterations"),
                                        child.get<int>("atoms"));
             simulations.push_back(std::pair<SimulationParameter, std::string>(params, child.get<std::string>("script")));

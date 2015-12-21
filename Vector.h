@@ -115,7 +115,7 @@ public:
      * @return The conjungated vector
      */
     template <typename U>
-    typename std::enable_if<std::is_complex<U>::value, Vector<T>>::type conjungate() {
+    typename std::enable_if<std::is_complex<U>::value, Vector<T>>::type conjungate() const {
         Vector ret(size());
         for (unsigned int i = 0; i < size(); ++i) {
             ret(i) = std::conj((*this)(i));
@@ -128,7 +128,7 @@ public:
      * @return The conjungated vector
      */
     template <typename U>
-    typename std::enable_if<!std::is_complex<U>::value, Vector<T>>::type conjungate() {
+    typename std::enable_if<!std::is_complex<U>::value, Vector<T>>::type conjungate() const {
         return *this;
     }
 
@@ -137,12 +137,12 @@ public:
      * @param other The other vector to compute the dot product with
      * @return The computed dot product
      */
-    Vector dot(const Vector<T>& other) {
+    T dot(const Vector<T>& other) const {
         assert(size() == other.size());
-        Vector ret(size());
-        Vector conj = this->conjungate<T>();
-        for (unsigned int i = 0; i < size(); ++i) {
-            ret(i) = conj(i) * other(i);
+        T ret = T();
+        Vector<T> conj = this->conjungate<T>();
+        for (unsigned int i = 0; i < size(); ++i) {            
+            ret += conj(i) * other(i);
         }
         return ret;
     }

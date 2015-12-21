@@ -6,6 +6,9 @@
 //! PI Define Pi for the appliation
 #define PI 3.141592653
 
+//! Hbar Define the reduced planck constant in Joule * second
+#define HBAR 6.626070040e-34
+
 namespace std {
      /**
      * @brief is_complex Utility class for the application for

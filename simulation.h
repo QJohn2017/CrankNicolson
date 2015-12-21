@@ -46,6 +46,12 @@ public:
     void setSolver(ComplexHamiltonianSolver* solver);
 
     /**
+     * @brief getSolver return the solver for the current simulation.
+     * @return The solver of the simulation
+     */
+    ComplexHamiltonianSolver* getSolver() const;
+
+    /**
      * @brief setSolver Sets the current solver of the simulation
      * @param solver The solver for the schrödinger equation
      */
@@ -73,7 +79,13 @@ public:
      * @brief getParameter return the current SimulationParamter of the simulation
      * @return The simulation paramters with timestep and resolution
      */
-    SimulationParameter getParameter() { return parameter; }
+    SimulationParameter getParameter() const { return parameter; }
+
+    /**
+     * @brief getIteration returns the current iteration index
+     * @return The iteration index
+     */
+    int getIteration() const { return currentIteration; }
 
     /**
      * @brief getAtoms get the atoms in the current simulation in a vector
@@ -85,4 +97,5 @@ protected:
     std::shared_ptr<ComplexHamiltonianSolver> hamiltonian;
     std::vector<std::shared_ptr<Observable>> filter;
     SimulationParameter parameter;
+    int currentIteration;
 };

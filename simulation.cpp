@@ -3,7 +3,7 @@
 #include <iostream>
 
 Simulation::Simulation(SimulationParameter params, std::shared_ptr<ComplexHamiltonianSolver> ham)
-    : atoms(params.atomCount), hamiltonian(ham), parameter(params) {
+    : atoms(params.atomCount), hamiltonian(ham), parameter(params), currentIteration(0) {
 }
 
 Simulation::~Simulation() {
@@ -15,7 +15,7 @@ void Simulation::run() {
             it->filter(*this);
     }
 
-    for (unsigned int i = 0; i < parameter.iterations; ++i) {
+    for (unsigned int i = 0; i < parameter.iterations; ++i, ++currentIteration) {
         atoms = hamiltonian->solve(atoms);
         atoms(0) = atoms(atoms.size() - 1) = 0;
 
@@ -33,6 +33,10 @@ void Simulation::run() {
 
 void Simulation::setSolver(ComplexHamiltonianSolver* solver) {
     hamiltonian.reset(solver);
+}
+
+ComplexHamiltonianSolver* Simulation::getSolver() const {
+    return hamiltonian.get();
 }
 
 void Simulation::setSolver(std::shared_ptr<ComplexHamiltonianSolver> solver) {

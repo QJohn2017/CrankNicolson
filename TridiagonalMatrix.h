@@ -3,8 +3,11 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <cmath>
-
 #include <vector>
+#include <limits>
+#include <tuple>
+#include <algorithm>
+#include <type_traits>
 
 #include "Vector.h"
 #include "utilitys.h"
@@ -162,15 +165,17 @@ public:
      * @param other The Vector to multiply the matrix with
      * @return The resulting Vector in a new object
      */
-    Vector<T> operator * (const Vector<T>& other) {
-        Vector<T> r(size);
-        r(0) = mat[Diagonal][0] * other(0) + mat[Lower][0] * other(1);
-        for (unsigned int i = 1; i < size - 1; ++i) {
-            r(i) = mat[Upper][i] * other(i - 1) + mat[Diagonal][i] * other(i) + mat[Lower][i] * other(i + 1);
-        }
-        r(size - 1) = mat[Upper][size - 1] * other(size - 2) + mat[Diagonal][size - 1] * other(size - 1);
-        return r;
-    }
+    template <typename U>
+    friend Vector<U> operator * (const TridiagonalMatrix<U>& mat, const Vector<U>& other);
+
+    /**
+     * @brief operator * Multiplication operator, which multiplies a Vector with current current TridiagonalMatrix.
+     *                   This returns a new Vector results form the Matrix multiplication
+     * @param other The Vector to multiply the matrix with
+     * @return The resulting Vector in a new object
+     */
+    template <typename U>
+    friend Vector<U> operator * (const Vector<U>& other, const TridiagonalMatrix<U>& mat);
 
     /**
      * @brief operator () The index operator to access elements by the diagonal and the index
@@ -180,6 +185,18 @@ public:
      * @return The element at the diagonal with the given index
      */
     T& operator () (Line line, unsigned int j) {
+        assert(line < 3 && j < size);
+        return mat[line][j];
+    }
+
+    /**
+     * @brief operator () The index operator to access elements by the diagonal and the index
+     * @param line The diagonal of the element
+     * @param j The index at the diagonal
+     * @require The index must be smaller than the size of the matrix
+     * @return The element at the diagonal with the given index
+     */
+    T operator () (Line line, unsigned int j) const {
         assert(line < 3 && j < size);
         return mat[line][j];
     }
@@ -201,6 +218,7 @@ public:
         auto b = mat[Diagonal];
         auto a = mat[Upper];
 
+
         c[0] /= c[0];
         d[0] /= b[0];
         for (unsigned int i = 1; i < size - 1; ++i) {
@@ -216,13 +234,66 @@ public:
     }
 
     /**
-     * @brief getEigenvalues Return the eigenvalues of the Matrix
-     * @return The Eigenvalues organised in a Vector
-     * @note This is not implemented jet!
+     * @brief getEigenvalues Return the eigenvalues of the Matrix in accending order
+     * @param error The error value for the non diagonal elements. For smaller errors use a smaller error value.
+     * @return The Eigenvalues organised in a std::vector
+     * @note The used algorithm is the qr algorithm for symmetric tridiagonal matrices so be carefull if your not using symmetric matrices
      */
-    Vector<T> getEigenvalues() {
-        assert(false);
-        //static_assert(false, "Not Implemented");
+    template <typename U>
+    typename std::enable_if<!std::is_complex<U>::value, Vector<U>>::type getEigenvalues(U error = 0.00001) {
+        TridiagonalMatrix<U> step(*this);
+        step.qrStep(std::sqrt(step.getSize()));
+
+        std::vector<U> eigenvalues;
+        eigenvalues.resize(size);
+        for (unsigned int i = 0; i < size; ++i) {
+            eigenvalues[i] = step(Diagonal, i);
+        }
+        std::sort(eigenvalues.begin(), eigenvalues.end());
+        Vector<U> result(eigenvalues.size());
+        for (unsigned int i = 0; i < eigenvalues.size(); ++i) {
+            result(i) = eigenvalues[i];
+        }
+
+        return result;
+    }
+
+    /**
+     * @brief getEigenvalues Return the eigenvalues of the Matrix in accending order
+     * @param error The error value for the non diagonal elements. For smaller errors use a smaller error value.
+     * @return The Eigenvalues organised in a std::vector
+     * @note The used algorithm is the qr algorithm for symmetric tridiagonal matrices so be carefull if your not using symmetric matrices
+     */
+    template <typename U>
+    typename std::enable_if<std::is_complex<U>::value, Vector<typename U::value_type>>::type getEigenvalues(typename U::value_type error = typename U::value_type(0.00001)) {
+        TridiagonalMatrix<U> step(*this);
+        step.qrStep(std::sqrt(step.getSize()));
+
+        std::vector<typename U::value_type> eigenvalues;
+        eigenvalues.resize(size);
+        for (unsigned int i = 0; i < size; ++i) {
+            eigenvalues[i] = step(Diagonal, i).real();
+        }
+        std::sort(eigenvalues.begin(), eigenvalues.end());
+        Vector<typename U::value_type> result(eigenvalues.size());
+        for (unsigned int i = 0; i < eigenvalues.size(); ++i) {
+            result(i) = eigenvalues[i];
+        }
+
+        return result;
+    }
+
+    /**
+     * @brief getExpectationValue computes the expectation value of an operator
+     *        \f[
+     *          <A>_{\phi} =
+     *        \f]
+     * @param vec The state to be expected
+     * @return The properbility of the expected state
+     */
+    T getExpectationValue(const Vector<T>& vec) const {
+        Vector<T> result = (*this) * vec;
+        return vec.dot(result);
     }
 
     /**
@@ -230,9 +301,172 @@ public:
      *                This is equal to the number of elements along the main diagonal
      * @return The size of the Matrix
      */
-    unsigned int getSize() { return size; }
+    unsigned int getSize() const { return size; }
 
 private:
+    template <typename U>
+    typename std::enable_if<!std::is_complex<U>::value, U>::type sign (U x) {
+        U value;
+        if (x < 0.0) {
+            value = -1.0;
+        }
+        else {
+            value = 1.0;
+        }
+        return value;
+    }
+
+    template <typename U>
+    typename std::enable_if<std::is_complex<T>::value, U>::type sign (U x) {
+        U value;
+        if (x.real() < 0.0) {
+            value = -1.0;
+        }
+        else {
+            value = 1.0;
+        }
+        return value;
+    }
+
+    inline std::tuple<T, T, T> givens(T a, T b) {
+        std::tuple<T, T, T> result;
+        if (std::abs(b) <= std::abs(std::numeric_limits<T>::epsilon())) {
+            std::get<0>(result) = sign(a); //std::copysign(1.0, a); // c
+            std::get<1>(result) = 0;                  // s
+            std::get<2>(result) = std::abs(a);        // r
+        } else if (std::abs(a) <= std::abs(std::numeric_limits<T>::epsilon())) {
+            std::get<0>(result) = 0;
+            std::get<1>(result) = sign(b); //std::copysign(1.0, b);
+            std::get<2>(result) = std::abs(b);
+        } else if (std::abs(b) > std::abs(a)) {
+            const T t = a / b;
+            const T u = sign(b) * std::sqrt(T(1) + t * t); //std::copysign(std::sqrt(1.0 + t*t), b);
+            std::get<1>(result) = -1.0 / u;
+            std::get<0>(result) = -std::get<1>(result) * t;
+            std::get<2>(result) = b * u;
+        } else {
+            const T t = b / a;
+            const T u = sign(a) * std::sqrt(T(1) + t * t); //std::copysign(std::sqrt(T(1) + t*t), a);
+            std::get<0>(result) = 1.0 / u;
+            std::get<1>(result) = -std::get<0>(result) * t;
+            std::get<2>(result) = a * u;
+        }
+        return result;
+    }
+
+    void qrStep(unsigned int iterations) {
+        unsigned int m = (*this).getSize() - 1;
+        unsigned int k = iterations;
+        while (m > 1) {
+            T shift = (*this)(Diagonal, m);
+            const T u = ((*this)(Diagonal, m - 1) - (*this)(Diagonal, m)) / 2.0;
+            if (std::abs(u) <= std::abs(std::numeric_limits<T>::epsilon())) {
+                shift = (*this)(Diagonal, m) - std::abs((*this)(Upper, m));
+            } else {
+                T b = (*this)(Upper, m - 1);
+                shift = (*this)(Diagonal, m) - sign(u) * b * b / (std::abs(u) + std::sqrt(u * u + b * b));
+            }
+
+            T x = (*this)(Diagonal, 0) - shift;
+            T y = (*this)(Upper, 0);
+            for (unsigned int k = 0; k < m; ++k) {
+                std::tuple<T, T, T> giv = givens(x, y);
+                const T c = std::get<0>(giv);
+                const T s = std::get<1>(giv);
+
+                const T w = c * x - s * y;
+                const T d = (*this)(Diagonal, k) - (*this)(Diagonal, k + 1);
+                const T z = (2 * c * (*this)(Upper, k) + d * s) * s;
+                (*this)(Diagonal, k) -= z;
+                (*this)(Diagonal, k + 1) += z;
+                (*this)(Upper, k) = d * c * s + (c * c - s * s) * (*this)(Upper, k);
+                x = (*this)(Upper, k);
+                if (k > 0) {
+                    (*this)(Upper, k - 1) = w;
+                }
+                if (k < m - 1) {
+                    y = -s * (*this)(Upper, k + 1);
+                    (*this)(Upper, k + 1) *= c;
+                }
+            }
+
+            k--;
+            if (k == 0) {
+                m--;
+                k = iterations;
+            }
+        }
+
+    }
+
+    /*void qrStep(unsigned int M, unsigned int s) {
+        assert (s > 1 && s <= size);
+
+        T shift = (*this)(Diagonal, M); //0.0;
+        //Wilkinson shift
+        const T u = ((*this)(Diagonal, M - 1) - (*this)(Diagonal, M)) / 2.0;
+        if (std::abs(u) <= std::abs(std::numeric_limits<T>::epsilon())) {
+            shift = (*this)(Diagonal, M) - std::abs((*this)(Upper, M));
+        } else {
+            T b = (*this)(Upper, M - 1);
+            shift = (*this)(Diagonal, M) - sign(u) * b * b / (std::abs(u) + std::sqrt(u * u + b * b));
+        }
+
+        const unsigned int size = s; //(*this).getSize();
+        T a = (*this)(Diagonal, 0) - shift;
+        T b = (*this)(Upper, 0);
+        T x = (*this)(Diagonal, 0);
+        T y = (*this)(Upper, 0);
+        for (unsigned int i = 0; i < size - 1; ++i) {
+            std::tuple<T, T, T> giv = givens(a, b);
+            const T c = std::get<0>(giv);
+            const T s = std::get<1>(giv);
+            const T r = std::get<2>(giv);
+            (*this)(Diagonal, i) = c * c * x + T(2) * c * s * y + s * s * (*this)(Diagonal, i + 1);
+            a = (c * c - s * s) * y + c * s * ((*this)(Diagonal, i + 1) - x);
+            x = s * s * x - T(2) * c * s * y + c * c * (*this)(Diagonal, i + 1);
+
+            if (i > 0) {
+                (*this)(Upper, i - 1) = r;
+            }
+            if (i < size - 1) {
+                b = s * (*this)(Upper, i + 1);
+                y = c * (*this)(Upper, i + 1);
+            }
+        }
+        (*this)(Upper, size - 2) = a;
+        (*this)(Diagonal, size - 1) = x;
+    }*/
+
     std::vector<T> mat[3];
     unsigned int size;
 };
+
+
+template <typename T>
+inline Vector<T> operator * (const TridiagonalMatrix<T>& mat, const Vector<T>& other) {
+    Vector<T> r(mat.size);
+    r(0) = mat.mat[TridiagonalMatrix<T>::Diagonal][0] * other(0) + mat.mat[TridiagonalMatrix<T>::Lower][0] * other(1);
+    for (unsigned int i = 1; i < mat.size - 1; ++i) {
+        r(i) = mat.mat[TridiagonalMatrix<T>::Upper][i] * other(i - 1) +
+               mat.mat[TridiagonalMatrix<T>::Diagonal][i] * other(i)  +
+               mat.mat[TridiagonalMatrix<T>::Lower][i] * other(i + 1);
+    }
+    r(mat.size - 1) = mat.mat[TridiagonalMatrix<T>::Upper][mat.size - 1] * other(mat.size - 2) +
+                      mat.mat[TridiagonalMatrix<T>::Diagonal][mat.size - 1] * other(mat.size - 1);
+    return r;
+}
+
+template <typename T>
+inline Vector<T> operator * (const Vector<T>& other, const TridiagonalMatrix<T>& mat) {
+    Vector<T> r(mat.size);
+    r(0) = mat.mat[TridiagonalMatrix<T>::Diagonal][0] * other(0) + mat.mat[TridiagonalMatrix<T>::Lower][0] * other(1);
+    for (unsigned int i = 1; i < mat.size - 1; ++i) {
+        r(i) = mat.mat[TridiagonalMatrix<T>::Upper][i - 1] * other(i - 1) +
+               mat.mat[TridiagonalMatrix<T>::Diagonal][i] * other(i)      +
+               mat.mat[TridiagonalMatrix<T>::Lower][i - 1] * other(i + 1);
+    }
+    r(mat.size - 1) = mat.mat[TridiagonalMatrix<T>::Upper][mat.size - 1] * other(mat.size - 2) +
+                      mat.mat[TridiagonalMatrix<T>::Diagonal][mat.size - 1] * other(mat.size - 1);
+    return r;
+}
