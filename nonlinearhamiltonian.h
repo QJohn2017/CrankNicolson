@@ -60,12 +60,13 @@ public:
      * @return The new wave in the next timestep of the simulation.
      */
     virtual Vector<T> solve(const Vector<T>& current) override {
-        double absV = 0;
+        /*double absV = 0;
         for (unsigned int i = 0; i < parameter.atomCount; ++i) {
             absV += std::abs(current(i));
-        }
+        }*/
 
         for (unsigned int i = 0; i < parameter.atomCount; ++i) {
+            double absV = current.dot(current).real();
             hamiltonian(TridiagonalMatrix<T>::Lower, i) = std::complex<double>(-1.0, 0);
             hamiltonian(TridiagonalMatrix<T>::Diagonal, i) = std::complex<double>( 2.0 + 2 * potentialFunction(static_cast<double>(i) / parameter.atomCount) + factor * absV, 0);
             hamiltonian(TridiagonalMatrix<T>::Upper, i) = std::complex<double>(-1.0, 0);

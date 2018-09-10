@@ -33,7 +33,7 @@ public:
                             << func(static_cast<double>(i) / sim.getAtoms().size())
                             << "\n";
         }
-        (*stream.get()) << "\n\n";
+        (*stream.get()) << "\n";
     }
 
 private:

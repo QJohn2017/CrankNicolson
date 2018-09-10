@@ -34,7 +34,7 @@ public:
                             << "\n";
         }
 
-        (*stream.get()) << "\n\n";
+        (*stream.get()) << "\n";
     }
 
 private:
@@ -81,7 +81,7 @@ public:
                             << "\n";
         }
 
-        (*stream.get()) << "\n\n";
+        (*stream.get()) << "\n";
     }
 
 private:
@@ -119,7 +119,7 @@ public:
                             << "\n";
         }
 
-        (*stream.get()) << "\n\n";
+        (*stream.get()) << "\n";
     }
 
 private:
